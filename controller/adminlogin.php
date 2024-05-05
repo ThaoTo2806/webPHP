@@ -33,7 +33,7 @@ class adminlogin
             $$adminUser = $this->tv->getTaiKhoan();
             $adminPass = $this->tv->getMatKhau();
             
-            $query = "SELECT * FROM thanhvien WHERE TaiKhoan = '$adminUser' AND MatKhau = '$adminPass' LIMIT 1";
+            $query = "SELECT * FROM thanhvien WHERE TaiKhoan COLLATE utf8_bin = '$adminUser' AND MatKhau COLLATE utf8_bin = '$adminPass' LIMIT 1";
             $result = $this->db->select($query);
 
             if($result != false){// tức là tk mk đúng
