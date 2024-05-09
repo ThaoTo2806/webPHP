@@ -26,7 +26,7 @@ include '../admin/inc/sidebar.php';
                 $message = "Danh sách đơn hàng đã duyệt";
                 $donHangs = $dh->showDonDaDuyet();
                 $tenNut = "In hóa đơn";
-                $chedo = "#";
+                $chedo = "inHD.php";
                 break;
             case 'dagiao':
                 $message = "Danh sách đơn hàng đã giao";

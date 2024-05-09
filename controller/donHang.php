@@ -276,4 +276,36 @@ class donHang
             echo '<script>window.location.href = "DuyetDonHang.php?page=daduyet";</script>';
         }
     }
+
+    public function getTTDonDaDuyet(int $ma)
+    {
+        $this->fm->validation($ma);
+
+        // Sử dụng MySQLi để gọi stored procedure
+        $statement = $this->db->prepare("CALL GetOrderDetails(?)");
+        $statement->bind_param("i", $ma); // Sử dụng bind_param thay vì bindParam
+        $statement->execute();
+        $result = $statement->get_result();
+
+        $DSResults = array();
+
+        while ($row = $result->fetch_assoc()) {
+            $dh = new DonDatHang();
+            $dh->setMaDDH($row['MaDDH']);
+            $dh->tv->setHoTen($row['HoTen']);
+            $dh->setNgayDatHang($row['NgayDatHang']);
+            $dh->setDaThanhToan($row['DaThanhToan']);
+            $dh->sp->setMaSP($row['MaSP']);
+            $dh->sp->setTenSP($row['TenSP']);
+            $dh->chitietDH->setSoLuong($row['SoLuong']);
+            $dh->sp->setDonGia($row['DonGia']);
+            $dh->setThanhTien($row['thanhTien']);
+            $dh->tv->setMaTV($row['MaTV']);
+            $dh->tv->setEmail($row['Email']);
+
+            $DSResults[] = $dh;
+        }
+
+        return $DSResults;
+    }
 }
