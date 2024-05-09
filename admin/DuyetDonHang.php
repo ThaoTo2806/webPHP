@@ -32,7 +32,7 @@ include '../admin/inc/sidebar.php';
                 $message = "Danh sách đơn hàng đã giao";
                 $donHangs = $dh->showDonDaGiao();
                 $tenNut = "In hóa đơn";
-                $chedo = "#";
+                $chedo = "inHD.php";
                 break;
             default:
                 $message = "Trang không tồn tại";

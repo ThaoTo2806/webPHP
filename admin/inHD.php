@@ -28,10 +28,16 @@ foreach ($donHangInfos as $donHangInfo) {
     $data = array(
         array('Mã hóa đơn:', $donHangInfo->getMaDDH()),
         array('Tên khách hàng:', $donHangInfo->tv->getHoTen()),
+        array('Mã sản phẩm:', $donHangInfo->sp->getMaSP()),
+        array('Tên sản phẩm:', $donHangInfo->sp->getTenSP()),
+        array('Số lượng mua:', $donHangInfo->chitietDH->getSoLuong()),
+        array('Đơn giá:', $donHangInfo->sp->getDonGia()),
         array('Ngày đặt hàng:', date('d-m-Y H:i:s', strtotime($donHangInfo->getNgayDatHang()))),
         array('Ngày giao:', ($donHangInfo->getNgayGiao() ? date('d-m-Y H:i:s', strtotime($donHangInfo->getNgayGiao())) : 'Chưa có')),
+        array('Địa chỉ giao:', $donHangInfo->tv->getDiaChi()),
+        array('Thành tiền:', $donHangInfo->getThanhTien()),
         array('Trạng thái:', ($donHangInfo->getDaThanhToan() ? 'Đã thanh toán' : 'Chưa thanh toán')),
-        array('Quà tặng:', $donHangInfo->getQuaTang())
+        array('Quà tặng:', ($donHangInfo->getQuaTang() ? $donHangInfo->getQuaTang() : 'Không quà'))
     );
 
     // Output table

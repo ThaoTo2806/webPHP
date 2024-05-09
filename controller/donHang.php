@@ -281,9 +281,8 @@ class donHang
     {
         $this->fm->validation($ma);
 
-        // Sử dụng MySQLi để gọi stored procedure
-        $statement = $this->db->prepare("CALL GetOrderDetails(?)");
-        $statement->bind_param("i", $ma); // Sử dụng bind_param thay vì bindParam
+        $statement = $this->db->prepare("CALL GetTTDaDuyet(?)");
+        $statement->bind_param("i", $ma);
         $statement->execute();
         $result = $statement->get_result();
 
@@ -294,6 +293,8 @@ class donHang
             $dh->setMaDDH($row['MaDDH']);
             $dh->tv->setHoTen($row['HoTen']);
             $dh->setNgayDatHang($row['NgayDatHang']);
+            $dh->setNgayGiao($row['NgayGiao']);
+            $dh->tv->setDiaChi($row['DiaChi']);
             $dh->setDaThanhToan($row['DaThanhToan']);
             $dh->sp->setMaSP($row['MaSP']);
             $dh->sp->setTenSP($row['TenSP']);
