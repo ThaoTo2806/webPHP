@@ -1,11 +1,4 @@
 <?php
-//include '../model/lib/session.php';
-include_once '../model/config/config.php';
-include_once '../model/lib/database.php';
-include '../model/helpers/format.php';
-include '../model/DonDatHang.php';
-include '../model/ChiTietDonDatHang.php';
-include '../model/KhuyenMai.php';
 
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
@@ -13,8 +6,6 @@ use PHPMailer\PHPMailer\Exception;
 require 'PHPMailer/src/Exception.php';
 require 'PHPMailer/src/PHPMailer.php';
 require 'PHPMailer/src/SMTP.php';
-
-
 class donHang
 {
     private $db;
@@ -30,11 +21,32 @@ class donHang
 
     public function showDonDatHang()
     {
-        $this->db->callProcedure('UpdateThanhTien');
-        $completedOrdersResult = $this->db->callProcedure('GetCompletedOrders');
+        $query = "SELECT 
+        ddh.MaDDH,
+        ddh.MaTV,
+        ddh.NgayDatHang,
+        ddh.NgayGiao,
+        sp.TenSP,
+        ctddh.SoLuong,
+        ctddh.DonGia,
+        ddh.thanhTien
+    FROM 
+        DONDATHANG ddh
+    JOIN 
+        CHITIETDONDATHANG ctddh ON ddh.MaDDH = ctddh.MaDDH
+    JOIN 
+        SANPHAM sp ON ctddh.MaSP = sp.MaSP
+    ORDER BY 
+        ddh.NgayDatHang DESC;
+    ";
 
-        if ($completedOrdersResult) {
-            while ($row = $completedOrdersResult->fetch_assoc()) {
+        $stmt = $this->db->prepare($query);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $dsDonDatHang = array();
+
+        if ($result->num_rows > 0) {
+            while ($row = $result->fetch_assoc()) {
                 $dh = new DonDatHang();
                 $dh->setMaDDH($row['MaDDH']);
                 $dh->setMaTV($row['MaTV']);
@@ -44,96 +56,134 @@ class donHang
                 $dh->chitietDH->setSoLuong($row['SoLuong']);
                 $dh->sp->setDonGia($row['DonGia']);
                 $dh->setThanhTien($row['thanhTien']);
-                // Thêm đối tượng DonDatHang vào mảng
-                $completedOrders[] = $dh;
+                $dsDonDatHang[] = $dh;
             }
         } else {
             echo "Chưa có đơn hàng";
         }
-        return $completedOrders;
+        return $dsDonDatHang;
     }
 
     public function showDonChuaDuyet()
     {
-        $this->db->callProcedure('UpdateThanhTien');
-        $UnapprovedOrdersResult = $this->db->callProcedure('GetUnapprovedOrders');
+        $query = "SELECT 
+        DDH.MaDDH,
+        TTDH.HoTen,
+        DDH.NgayDatHang,
+        DDH.TinhTrang,
+        DDH.NgayGiao,
+        DDH.DaThanhToan,
+        DDH.QuaTang
+    FROM 
+        dondathang DDH
+    INNER JOIN 
+        thanhvien TV ON DDH.MaTV = TV.MaTV
+    INNER JOIN 
+        thongtindathang TTDH ON DDH.MaTTDH = TTDH.MaTTDH WHERE `TinhTrang` LIKE 'Chưa duyệt';
+    ";
 
-        $UnapprovedOrders = array();
+        $stmt = $this->db->prepare($query);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $dsDonHangChuaDuyet = array();
 
-        if ($UnapprovedOrdersResult) {
-            while ($row = $UnapprovedOrdersResult->fetch_assoc()) {
+        if ($result->num_rows > 0) {
+            while ($row = $result->fetch_assoc()) {
                 $dh = new DonDatHang();
                 $dh->setMaDDH($row['MaDDH']);
-                $dh->setMaTV($row['MaTV']);
+                $dh->ttdh->setHoTen($row['HoTen']);
                 $dh->setNgayDatHang($row['NgayDatHang']);
+                $dh->setTinhTrang($row['TinhTrang']);
                 $dh->setNgayGiao($row['NgayGiao']);
+                $dh->setDaThanhToan($row['DaThanhToan']);
                 $dh->setQuaTang($row['QuaTang']);
-                $dh->setThanhTien($row['ThanhTien']);
 
-                // Thêm đối tượng DonDatHang vào mảng
-                $UnapprovedOrders[] = $dh;
+                $dsDonHangChuaDuyet[] = $dh;
             }
-        } else {
-            echo "Chưa có đơn hàng";
         }
-        // Trả về mảng đơn hàng chưa duyệt
-        return $UnapprovedOrders;
+        return $dsDonHangChuaDuyet;
     }
-
 
     public function showDonDaDuyet()
     {
-        $this->db->callProcedure('UpdateThanhTien');
-        $ApprovedOrdersResult = $this->db->callProcedure('GetApprovedOrders');
+        $query = "SELECT 
+        DDH.MaDDH,
+        TTDH.HoTen,
+        DDH.NgayDatHang,
+        DDH.TinhTrang,
+        DDH.NgayGiao,
+        DDH.DaThanhToan,
+        DDH.QuaTang
+    FROM 
+        dondathang DDH
+    INNER JOIN 
+        thanhvien TV ON DDH.MaTV = TV.MaTV
+    INNER JOIN 
+        thongtindathang TTDH ON DDH.MaTTDH = TTDH.MaTTDH WHERE `TinhTrang` LIKE 'Đã duyệt';
+    ";
 
-        // Khởi tạo biến $ApprovedOrders là một mảng rỗng
-        $ApprovedOrders = array();
+        $stmt = $this->db->prepare($query);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $dsDonHangDaDuyet = array();
 
-        if ($ApprovedOrdersResult) {
-            while ($row = $ApprovedOrdersResult->fetch_assoc()) {
+        if ($result->num_rows > 0) {
+            while ($row = $result->fetch_assoc()) {
                 $dh = new DonDatHang();
                 $dh->setMaDDH($row['MaDDH']);
-                $dh->setMaTV($row['MaTV']);
+                $dh->ttdh->setHoTen($row['HoTen']);
                 $dh->setNgayDatHang($row['NgayDatHang']);
+                $dh->setTinhTrang($row['TinhTrang']);
                 $dh->setNgayGiao($row['NgayGiao']);
+                $dh->setDaThanhToan($row['DaThanhToan']);
                 $dh->setQuaTang($row['QuaTang']);
-                $dh->setThanhTien($row['ThanhTien']);
 
                 // Thêm đối tượng DonDatHang vào mảng
-                $ApprovedOrders[] = $dh;
+                $dsDonHangDaDuyet[] = $dh;
             }
-        } else {
-            echo "Chưa có đơn hàng";
         }
-        return $ApprovedOrders;
+        return $dsDonHangDaDuyet;
     }
-
-
 
     public function showDonDaGiao()
     {
-        $this->db->callProcedure('UpdateThanhTien');
-        $deliveredOrdersResult = $this->db->callProcedure('GetDeliveredOrders');
+        $query = "SELECT 
+        DDH.MaDDH,
+        TTDH.HoTen,
+        DDH.NgayDatHang,
+        DDH.TinhTrang,
+        DDH.NgayGiao,
+        DDH.DaThanhToan,
+        DDH.QuaTang
+    FROM 
+        dondathang DDH
+    INNER JOIN 
+        thanhvien TV ON DDH.MaTV = TV.MaTV
+    INNER JOIN 
+        thongtindathang TTDH ON DDH.MaTTDH = TTDH.MaTTDH WHERE `TinhTrang` LIKE 'Đã giao';
+    ";
 
-        $deliveredOrders = array();
+        $stmt = $this->db->prepare($query);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $dsDonHangDaGiao = array();
 
-        if ($deliveredOrdersResult) {
-            while ($row = $deliveredOrdersResult->fetch_assoc()) {
+        if ($result->num_rows > 0) {
+            while ($row = $result->fetch_assoc()) {
                 $dh = new DonDatHang();
                 $dh->setMaDDH($row['MaDDH']);
-                $dh->setMaTV($row['MaTV']);
+                $dh->ttdh->setHoTen($row['HoTen']);
                 $dh->setNgayDatHang($row['NgayDatHang']);
+                $dh->setTinhTrang($row['TinhTrang']);
                 $dh->setNgayGiao($row['NgayGiao']);
+                $dh->setDaThanhToan($row['DaThanhToan']);
                 $dh->setQuaTang($row['QuaTang']);
-                $dh->setThanhTien($row['ThanhTien']);
 
                 // Thêm đối tượng DonDatHang vào mảng
-                $deliveredOrders[] = $dh;
+                $dsDonHangDaGiao[] = $dh;
             }
-        } else {
-            echo "Chưa có đơn hàng";
         }
-        return $deliveredOrders;
+        return $dsDonHangDaGiao;
     }
 
     public function showTTKhuyenMai()
@@ -180,20 +230,25 @@ class donHang
         $result = $this->db->insert($query);
 
         if ($result) {
-            $alert = "<span class='success'>Thêm chương trình khuyến mãi thành công</span>";
-            return $alert;
+            return true;
         } else {
-            $alert = "<span class='error'>Thêm chương trình khuyến mãi thất bại</span>";
-            return $alert;
+            return false;
         }
     }
 
     public function getTTDonChuaDuyet(int $ma)
     {
-        $this->fm->validation($ma);
+        $query = "SELECT dondathang.MaDDH, thongtindathang.HoTen, dondathang.NgayDatHang, dondathang.DaThanhToan,
+        chitietdondathang.MaSP, sanpham.TenSP, chitietdondathang.SoLuong, chitietdondathang.DonGia,
+        dondathang.thanhTien, dondathang.MaTV, thanhvien.Email
+        FROM dondathang
+        JOIN thongtindathang ON dondathang.MaTTDH = thongtindathang.MaTTDH
+        JOIN chitietdondathang ON dondathang.MaDDH = chitietdondathang.MaDDH
+        JOIN thanhvien ON thanhvien.MaTV = dondathang.MaTV
+        JOIN sanpham ON chitietdondathang.MaSP = sanpham.MaSP
+        WHERE dondathang.MaDDH = ?;";
 
-        // Sử dụng MySQLi để gọi stored procedure
-        $statement = $this->db->prepare("CALL GetOrderDetails(?)");
+        $statement = $this->db->prepare($query);
         $statement->bind_param("i", $ma); // Sử dụng bind_param thay vì bindParam
         $statement->execute();
         $result = $statement->get_result();
@@ -203,13 +258,13 @@ class donHang
         while ($row = $result->fetch_assoc()) {
             $dh = new DonDatHang();
             $dh->setMaDDH($row['MaDDH']);
-            $dh->tv->setHoTen($row['HoTen']);
+            $dh->ttdh->setHoTen($row['HoTen']);
             $dh->setNgayDatHang($row['NgayDatHang']);
             $dh->setDaThanhToan($row['DaThanhToan']);
             $dh->sp->setMaSP($row['MaSP']);
             $dh->sp->setTenSP($row['TenSP']);
             $dh->chitietDH->setSoLuong($row['SoLuong']);
-            $dh->sp->setDonGia($row['DonGia']);
+            $dh->chitietDH->setDonGia($row['DonGia']);
             $dh->setThanhTien($row['thanhTien']);
             $dh->tv->setMaTV($row['MaTV']);
             $dh->tv->setEmail($row['Email']);
@@ -219,8 +274,6 @@ class donHang
 
         return $DSResults;
     }
-
-
 
     public function guiMailThongBao($recipientEmail, $tennd)
     {
@@ -249,9 +302,6 @@ class donHang
         }
     }
 
-
-
-
     public function capNhatDuyetDon($maddh, $ngGiao, $ttDuyet, $ttThanhToan, $mail, $tennd)
     {
         $maddh = $this->fm->validation($maddh);
@@ -277,36 +327,38 @@ class donHang
         }
     }
 
-    public function getTTDonDaDuyet(int $ma)
+    public function layTTDDH(int $maddh)
     {
-        $this->fm->validation($ma);
+        $query = "SELECT * FROM `chitietdondathang` WHERE `MaDDH` = ?";
+        $stmt = $this->db->prepare($query);
+        $stmt->bind_param("i", $maddh);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $dsTTDH = array();
 
-        $statement = $this->db->prepare("CALL GetTTDaDuyet(?)");
-        $statement->bind_param("i", $ma);
-        $statement->execute();
-        $result = $statement->get_result();
-
-        $DSResults = array();
-
-        while ($row = $result->fetch_assoc()) {
-            $dh = new DonDatHang();
-            $dh->setMaDDH($row['MaDDH']);
-            $dh->tv->setHoTen($row['HoTen']);
-            $dh->setNgayDatHang($row['NgayDatHang']);
-            $dh->setNgayGiao($row['NgayGiao']);
-            $dh->tv->setDiaChi($row['DiaChi']);
-            $dh->setDaThanhToan($row['DaThanhToan']);
-            $dh->sp->setMaSP($row['MaSP']);
-            $dh->sp->setTenSP($row['TenSP']);
-            $dh->chitietDH->setSoLuong($row['SoLuong']);
-            $dh->sp->setDonGia($row['DonGia']);
-            $dh->setThanhTien($row['thanhTien']);
-            $dh->tv->setMaTV($row['MaTV']);
-            $dh->tv->setEmail($row['Email']);
-
-            $DSResults[] = $dh;
+        if ($result->num_rows > 0) {
+            while ($row = $result->fetch_assoc()) {
+                $sp = new ChiTietDonDatHang();
+                $sp->setMaSP($row['MaSP']);
+                $sp->setSoLuong($row['SoLuong']);
+                $sp->setMaMau($row['MaMau']);
+                $dsTTDH[] = $sp;
+            }
         }
+        return $dsTTDH;
+    }
 
-        return $DSResults;
+    public function capNhapSLTon(int $sl, int $masp, int $mamau)
+    {
+        $query = "UPDATE `sanpham_mau` SET `SoLuongTon`= (`SoLuongTon` - ?) WHERE `MaSP` = ? AND `MaMau` = ?;";
+
+        $stmt = $this->db->prepare($query);
+        $stmt->bind_param("iii", $sl, $masp, $mamau);
+
+        if ($stmt->execute()) {
+            return true;
+        } else {
+            return false;
+        }
     }
 }

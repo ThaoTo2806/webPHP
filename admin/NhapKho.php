@@ -1,6 +1,6 @@
 <?php
-include '../admin/inc/header.php';
-include '../admin/inc/sidebar.php';
+
+include('../admin/include_lib.php');
 
 // Đảm bảo rằng biến $page được khởi tạo
 $page = isset($_GET['page']) ? $_GET['page'] : 1;
@@ -28,14 +28,12 @@ $page = isset($_GET['page']) ? $_GET['page'] : 1;
 					</div>
 					<div class="col-md-5"></div>
 					<div class="col-md-4">
-						<input type="text" class="form-control" style="width: 450px;" placeholder="Tìm tên sản phẩm hoặc tên nhà cung cấp..."> 
+						<input type="text" class="form-control" style="width: 450px;" placeholder="Tìm tên sản phẩm hoặc tên nhà cung cấp...">
 						<div class="input-group-append">
 							<button class="btn btn-primary" type="button"><i class="fa fa-search"></i></button>
 						</div>
 					</div>
 				</div>
-
-
 				<div class="table-responsive">
 					<table class="table">
 						<thead>
@@ -44,18 +42,20 @@ $page = isset($_GET['page']) ? $_GET['page'] : 1;
 								<th>Tên nhà cung cấp</th>
 								<th>Tên sản phẩm</th>
 								<th>Ngày nhập</th>
-								<th>Đơn giá nhập</th>
+								<th>Tên màu 1</th>
 								<th>Số lượng nhập</th>
+								<th>Tên màu 2</th>
+								<th>Số lượng nhập</th>
+								<th>Đơn giá nhập</th>
 								<th></th>
 							</tr>
 						</thead>
 						<tbody>
-							<?php 
-							include '../controller/phieuNhapController.php';
+							<?php
 							$dh = new phieuNhapController();
 							$dsPhieuNhap = $dh->showDSPhieuNhap();
 
-							$recordsPerPage = 2;
+							$recordsPerPage = 9;
 							if (!empty($dsPhieuNhap)) {
 								$startIndex = ($page - 1) * $recordsPerPage;
 								$endIndex = min($startIndex + $recordsPerPage - 1, count($dsPhieuNhap) - 1);
@@ -68,8 +68,11 @@ $page = isset($_GET['page']) ? $_GET['page'] : 1;
 										<td><?php echo $pn->ncc->getTenNCC(); ?></td>
 										<td><?php echo $pn->sp->getTenSP(); ?></td>
 										<td><?php echo $pn->pn->getNgayNhap(); ?></td>
-										<td><?php echo $pn->getDonGiaNhap(); ?></td>
-										<td><?php echo $pn->getSoLuongNhap(); ?></td>
+										<td><?php echo $pn->mau1->getTenMau(); ?></td>
+										<td><?php echo $pn->getSoLuongNhapMau1(); ?></td>
+										<td><?php echo $pn->mau2->getTenMau(); ?></td>
+										<td><?php echo $pn->getSoLuongNhapMau2(); ?></td>
+										<td><?php echo number_format($pn->getDonGiaNhap(), 0, '.', ','); ?> VND</td>
 									</tr>
 							<?php
 								}
@@ -88,18 +91,18 @@ $page = isset($_GET['page']) ? $_GET['page'] : 1;
 						$totalPages = ceil(count($dsPhieuNhap) / $recordsPerPage);
 
 						if ($page > 1) {
-							echo "<a href='NhapKho.php?page=" . ($page - 1) . "' class='btn btn-primary'>Prev</a>";
+							echo "<a href='NhapKho.php?page=" . ($page - 1) . "' class='btn btn-primary mr-1'><<</a>";
 						}
 
 						// Hiển thị các trang
 						for ($i = 1; $i <= $totalPages; $i++) {
 							$activeClass = ($i == $page) ? 'active' : '';
-							echo "<a href='NhapKho.php?page=$i' class='btn btn-primary $activeClass'>$i</a>";
+							echo "<a href='NhapKho.php?page=$i' class='btn btn-primary $activeClass mr-1'>$i</a>";
 						}
 
 						// Hiển thị nút "next" nếu không phải trang cuối cùng
 						if ($page < $totalPages) {
-							echo "<a href='NhapKho.php?page=" . ($page + 1) . "' class='btn btn-primary'>Next</a>";
+							echo "<a href='NhapKho.php?page=" . ($page + 1) . "' class='btn btn-primary'>>></a>";
 						}
 						?>
 					</div>

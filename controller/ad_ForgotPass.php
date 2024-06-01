@@ -1,7 +1,9 @@
 <?php
 include '../model/lib/session.php';
+include '../model/config/config.php';
 include '../model/lib/database.php';
 include '../model/helpers/format.php';
+include '../model/MaHoa.php';
 
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
@@ -34,7 +36,6 @@ class ad_ForgotPass
         $query = "UPDATE thanhvien SET MatKhau = '$mk' WHERE Email = '$mail'";
 
         $result = $this->db->update($query);
-
     }
 
     public function guiMailThongBao($recipientEmail)
@@ -45,8 +46,10 @@ class ad_ForgotPass
         for ($i = 0; $i < 6; $i++) {
             $matKhauTamThoi .= $characters[rand(0, $length - 1)];
         }
+        $maHoa = new MaHoa();
+        $hasPass = $maHoa->ma_hoa_md5($matKhauTamThoi);
 
-        $this->capNhatMatKhau($recipientEmail, $matKhauTamThoi);
+        $this->capNhatMatKhau($recipientEmail, $hasPass);
 
         $mail = new PHPMailer(true);
         try {
@@ -72,8 +75,7 @@ class ad_ForgotPass
         } catch (Exception $e) {
             echo "Message could not be sent. Mailer Error: {$mail->ErrorInfo}";
         }
-    } 
-
+    }
 
     public function ad_ForgotPass($ad_mail)
     {

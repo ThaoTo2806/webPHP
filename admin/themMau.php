@@ -1,9 +1,6 @@
 <?php
-include '../admin/inc/header.php';
-include '../admin/inc/sidebar.php';
-include '../controller/Admin/SanPhamController.php';
-include '../controller/Admin/MauController.php';
 
+include('../admin/include_lib.php');
 $sp = new SanPhamAdmin();
 $mauclass = new MauAdmin();
 if (isset($_POST['btnLuuMau'])) {
@@ -17,8 +14,8 @@ if (isset($_POST['btnLuuMau'])) {
     if ($result1 && $result2) {
         echo "<script>alert('Thêm màu thành công!');</script>";
         echo "<script>window.location.href = 'SanPham.php?ma=1';</script>";
-        exit(); 
-    }else {
+        exit();
+    } else {
         echo "Insert failed!";
     }
 }
@@ -55,7 +52,7 @@ if (isset($_POST['btnLuuMau'])) {
                                 ?>
                                     <div class="col-md-6">
                                         <div class="card">
-                                            <img src="../data/Products/<?php echo $sp->getHinhAnh() ?>" class="card-img-top img-fluid ">
+                                            <img src="../view/images/products/<?php echo $sp->getHinhAnh() ?>" class="card-img-top img-fluid ">
                                             <div class="card-body">
                                                 <h2 class="card-title  text-center"><?php echo $sp->getHinhAnh() ?></h2>
                                                 <label class="mb10">Vui lòng chọn màu</label>
@@ -73,7 +70,7 @@ if (isset($_POST['btnLuuMau'])) {
                                     </div>
                                     <div class="col-md-6">
                                         <div class="card">
-                                            <img src="../data/Products/<?php echo $sp->getHinhAnh2() ?>" class="card-img-top img-fluid ">
+                                            <img src="../view/images/products/<?php echo $sp->getHinhAnh2() ?>" class="card-img-top img-fluid ">
                                             <div class="card-body">
                                                 <h2 class="card-title  text-center"><?php echo $sp->getHinhAnh2() ?></h2>
                                                 <label class="mb10">Vui lòng chọn màu</label>

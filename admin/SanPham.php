@@ -1,10 +1,9 @@
 <?php
-include '../admin/inc/header.php';
-include '../admin/inc/sidebar.php';
-include '../controller/Admin/SanPhamController.php';
-include '../controller/Admin/MauController.php';
+include('../admin/include_lib.php');
 
 $page = isset($_GET['page']) ? $_GET['page'] : 1;
+$dh = new SanPhamAdmin();
+$mauclass = new MauAdmin();
 ?>
 
 <style>
@@ -133,8 +132,6 @@ $page = isset($_GET['page']) ? $_GET['page'] : 1;
 						</thead>
 						<tbody>
 							<?php
-							$dh = new SanPhamAdmin();
-							$mauclass = new MauAdmin();
 							$dsSanPham = $dh->showSanPham($maloai);
 							$recordsPerPage = 7;
 							if (!empty($dsSanPham)) {
@@ -144,8 +141,6 @@ $page = isset($_GET['page']) ? $_GET['page'] : 1;
 								for ($i = $startIndex; $i <= $endIndex; $i++) {
 									$sp = $dsSanPham[$i];
 									$phantramkhuyenmai = $dh->layKhuyenMaitheoMaSP($sp->getMaSP());
-									$giahientai = $sp->getDonGia() - ($sp->getDonGia() * $phantramkhuyenmai / 100);
-
 									$dsMau = $mauclass->layTenMauSPtheoMaSP($sp->getMaSP());
 									$dsSLT = $mauclass->laySLTSPtheoMaSP($sp->getMaSP());
 
@@ -154,6 +149,13 @@ $page = isset($_GET['page']) ? $_GET['page'] : 1;
 										$promotionInfo = $dh->layThongTinKhuyenMaiTheoMa($sp->getMaKhuyenMai());
 										$ngayBatDau = $promotionInfo['NgayBatDau'];
 										$ngayKetThuc = $promotionInfo['NgayKetThuc'];
+										if ($phantramkhuyenmai != null && date('Y-m-d') >= $ngayBatDau && date('Y-m-d') <= $ngayKetThuc) {
+											$giahientai = $sp->getDonGia() - ($sp->getDonGia() * $phantramkhuyenmai / 100);
+										} else {
+											$giahientai = $sp->getDonGia();
+										}
+									} else {
+										$giahientai = $sp->getDonGia();
 									}
 							?>
 									<tr>
@@ -161,23 +163,46 @@ $page = isset($_GET['page']) ? $_GET['page'] : 1;
 										<td style="text-align: left;"><?php echo $sp->getTenSP(); ?></td>
 										<td>
 											<?php
-											echo number_format($sp->getDonGia(), 0, ',', '.') . '₫';
+											if ($sp->getDonGia() == null) {
 											?>
+												<a href="themPN.php?ma=<?php echo $sp->getMaSP(); ?>">Thêm phiếu nhập</a>
+											<?php
+											} else {
+												echo number_format($sp->getDonGia(), 0, ',', '.') . '₫';
+											}
+											?>
+											<br>
+											<a href="themPN.php?ma=<?php echo $sp->getMaSP(); ?>">Thêm phiếu nhập</a>
 										</td>
 										<td style="color: red;">
-											<strong>
-												<?php
-												echo number_format($giahientai, 0, ',', '.') . '₫';
-												?>
-											</strong>
+											<?php
+											if ($sp->getDonGia() == null) {
+											?>
+												<a href="themPN.php?ma=<?php echo $sp->getMaSP(); ?>">Thêm phiếu nhập</a>
+											<?php
+											} else {
+											?>
+												<strong>
+													<?php
+													echo number_format($giahientai, 0, ',', '.') . '₫';
+													?>
+												</strong>
+											<?php
+											}
+											?>
+											<br>
+											<a href="themPN.php?ma=<?php echo $sp->getMaSP(); ?>">Thêm phiếu nhập</a>
 										</td>
 										<td>
 											<?php
 											if ($phantramkhuyenmai != null && date('Y-m-d') >= $ngayBatDau && date('Y-m-d') <= $ngayKetThuc) {
 												echo $phantramkhuyenmai . "%";
+											?>
+												<a href="themKM.php?ma=<?php echo $sp->getMaSP(); ?>">Thêm khuyến mãi</a>
+											<?php
 											} else {
 											?>
-												<a href="themKM.php?ma=<?php echo $sp->getMaSP(); ?>">Chương trình khuyến mãi</a>
+												<a href="themKM.php?ma=<?php echo $sp->getMaSP(); ?>">Thêm khuyến mãi</a>
 											<?php
 											}
 											?>
@@ -203,7 +228,7 @@ $page = isset($_GET['page']) ? $_GET['page'] : 1;
 											foreach ($dsMau as $index => $mau) {
 										?>
 												<td>
-													<img src="../data/Products/<?php echo ($isFirstColor ? $sp->getHinhAnh() : $sp->getHinhAnh2()) ?>" alt="" width="120px">
+													<img src="../view/images/products/<?php echo ($isFirstColor ? $sp->getHinhAnh() : $sp->getHinhAnh2()) ?>" alt="" width="120px">
 													<br />
 													<p style="margin-top: 24px; font-size: 16px;">Màu: <span style="color: red; font-weight: bold;"><?php echo $mau->getTenMau() ?></span></p>
 													<p style="margin-top: 8px; font-size: 16px;">Số lượng: <span style="color: red; font-weight: bold;"><?php echo $dsSLT[$index]->getSoLuongTon() ?></span></p>
@@ -215,13 +240,13 @@ $page = isset($_GET['page']) ? $_GET['page'] : 1;
 											if ($dsSLT != null) {
 											?>
 												<td>
-													<img src="../data/Products/<?php echo $sp->getHinhAnh() ?>" alt="" width="120px">
+													<img src="../view/images/products/<?php echo $sp->getHinhAnh() ?>" alt="" width="120px">
 													<br />
 													<p style="margin-top: 24px; font-size: 16px;"><a href="themMau.php?ma=<?php echo $sp->getMaSP() ?>">Thêm màu</a></p>
 													<p style="margin-top: 8px; font-size: 16px;">Số lượng: <span style="color: red; font-weight: bold;"><?php echo $dsSLT[0]->getSoLuongTon() ?></span></p>
 												</td>
 												<td>
-													<img src="../data/Products/<?php echo $sp->getHinhAnh2() ?>" alt="" width="120px">
+													<img src="../view/images/products/<?php echo $sp->getHinhAnh2() ?>" alt="" width="120px">
 													<br />
 													<p style="margin-top: 24px; font-size: 16px;"><a href="themMau.php?ma=<?php echo $sp->getMaSP() ?>">Thêm màu</a></p>
 													<p style="margin-top: 8px; font-size: 16px;">Số lượng: <span style="color: red; font-weight: bold;"><?php echo $dsSLT[1]->getSoLuongTon() ?></span></p>
@@ -230,13 +255,13 @@ $page = isset($_GET['page']) ? $_GET['page'] : 1;
 											} else {
 											?>
 												<td>
-													<img src="../data/Products/<?php echo $sp->getHinhAnh() ?>" alt="" width="120px">
+													<img src="../view/images/products/<?php echo $sp->getHinhAnh() ?>" alt="" width="120px">
 													<br />
 													<p style="margin-top: 24px; font-size: 16px;"><a href="themMau.php?ma=<?php echo $sp->getMaSP() ?>">Thêm màu</a></p>
 													<p style="margin-top: 8px; font-size: 16px;">Số lượng: <span style="color: red; font-weight: bold;">0</span></p>
 												</td>
 												<td>
-													<img src="../data/Products/<?php echo $sp->getHinhAnh2() ?>" alt="" width="120px">
+													<img src="../view/images/products/<?php echo $sp->getHinhAnh2() ?>" alt="" width="120px">
 													<br />
 													<p style="margin-top: 24px; font-size: 16px;"><a href="themMau.php?ma=<?php echo $sp->getMaSP() ?>">Thêm màu</a></p>
 													<p style="margin-top: 8px; font-size: 16px;">Số lượng: <span style="color: red; font-weight: bold;">0</span></p>
@@ -276,7 +301,7 @@ $page = isset($_GET['page']) ? $_GET['page'] : 1;
 										</td>
 										<td>
 											<!-- Nút "Thêm" -->
-											<a href="duong_dan_toi_trang_them.php" class="btn btn-primary">
+											<a href="themCTSP.php?ma=<?php echo $sp->getMaSP() ?>" class="btn btn-primary">
 												<span style="color: #ffffff" class="glyphicon glyphicon-plus"></span>
 											</a>
 

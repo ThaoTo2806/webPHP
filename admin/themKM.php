@@ -1,8 +1,6 @@
 <?php
-include '../admin/inc/header.php';
-include '../admin/inc/sidebar.php';
-include '../controller/Admin/SanPhamController.php';
 
+include('../admin/include_lib.php');
 $sp = new SanPhamAdmin();
 if (isset($_POST['btn_Luu'])) {
     $masp = $_GET['ma'];
@@ -13,7 +11,7 @@ if (isset($_POST['btn_Luu'])) {
     if ($updateKM) {
         echo "<script>alert('Thêm chương trình khuyến mãi thành công!');</script>";
         echo "<script>window.location.href = 'SanPham.php?ma=1';</script>";
-        exit(); 
+        exit();
     }
 }
 ?>
@@ -35,37 +33,67 @@ if (isset($_POST['btn_Luu'])) {
                     foreach ($dsSanPham as $tenSP) {
                 ?>
                         <h2 class="text-center mb-2"><?php echo $tenSP->getTenSP() ?></h2>
-                        <form method="POST">
-                            <label for="PhanTramGiamGia">Chương trình khuyến mãi</label>
-                            <select class="form-control" name="MaKhuyenMai" id="selectKhuyenMai">
-                                <?php
-                                include '../controller/donHang.php';
-                                $dh = new donHang();
-                                $dsKhuyenMai = $dh->showTTKhuyenMai();
-                                foreach ($dsKhuyenMai as $km) {
-                                ?>
-                                    <option value="<?php echo $km->getMaKhuyenMai() ?>" data-phantramgiamgia="<?php echo $km->getPhanTramGiamGia() ?>"><?php echo $km->getTenKhuyenMai() ?></option>
-                                <?php
-                                }
-                                ?>
-                            </select>
-                            <div class="form-group">
-                                <label for="PhanTramGiamGia">Giảm giá</label>
-                                <select class="form-control" name="PhanTramGiamGia" id="selectPhanTram" disabled>
-                                    <?php
-                                    foreach ($dsKhuyenMai as $km) {
-                                    ?>
-                                        <option value="<?php echo $km->getPhanTramGiamGia() ?>"><?php echo $km->getPhanTramGiamGia() ?>%</option>
-                                    <?php
-                                    }
-                                    ?>
-                                </select>
+                        <div class="row">
+                            <div class="col-md-8 mx-auto">
+                                <form method="POST">
+                                    <label for="PhanTramGiamGia">Chương trình khuyến mãi</label>
+                                    <select class="form-control" name="MaKhuyenMai" id="selectKhuyenMai">
+                                        <?php
+                                        $dh = new donHang();
+                                        $dsKhuyenMai = $dh->showTTKhuyenMai();
+                                        foreach ($dsKhuyenMai as $km) {
+                                        ?>
+                                            <option value="<?php echo $km->getMaKhuyenMai() ?>" data-phantramgiamgia="<?php echo $km->getPhanTramGiamGia() ?>" data-ngaybatdau="<?php echo $km->getNgayBatDau() ?>" data-ngayketthuc="<?php echo $km->getNgayKetThuc() ?>"><?php echo $km->getTenKhuyenMai() ?></option>
+                                        <?php
+                                        }
+                                        ?>
+                                    </select>
+                                    <div class="form-group">
+                                        <label for="PhanTramGiamGia">Giảm giá</label>
+                                        <select class="form-control" name="PhanTramGiamGia" id="selectPhanTram" disabled>
+                                            <?php
+                                            foreach ($dsKhuyenMai as $km) {
+                                            ?>
+                                                <option value="<?php echo $km->getPhanTramGiamGia() ?>"><?php echo $km->getPhanTramGiamGia() ?>%</option>
+                                            <?php
+                                            }
+                                            ?>
+                                        </select>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label for="">Ngày bắt đầu</label>
+                                        <select class="form-control" name="" id="selectNgayBatDau" disabled>
+                                            <?php
+                                            foreach ($dsKhuyenMai as $km) {
+                                            ?>
+                                                <option value="<?php echo $km->getNgayBatDau() ?>"><?php echo $km->getNgayBatDau() ?></option>
+                                            <?php
+                                            }
+                                            ?>
+                                        </select>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label for="">Ngày kết thúc</label>
+                                        <select class="form-control" name="PhanTramGiamGia" id="selectNgayKetThuc" disabled>
+                                            <?php
+                                            foreach ($dsKhuyenMai as $km) {
+                                            ?>
+                                                <option value="<?php echo $km->getNgayKetThuc() ?>"><?php echo $km->getNgayKetThuc() ?></option>
+                                            <?php
+                                            }
+                                            ?>
+                                        </select>
+                                    </div>
+
+                                    <div class="form-group" style="margin-top: 12px;">
+                                        <a href="SanPham.php?ma=<?php echo $masp ?>" class="btn btn-danger">Trở lại</a>
+                                        <button type="submit" class="btn btn-primary" name="btn_Luu">Lưu</button>
+                                    </div>
+                                </form>
                             </div>
-                            <div class="form-group" style="margin-top: 12px;">
-                                <a href="SanPham?ma=<?php echo $masp ?>" class="btn btn-danger">Trở lại</a>
-                                <button type="submit" class="btn btn-primary" name="btn_Luu">Lưu</button>
-                            </div>
-                        </form>
+                        </div>
                 <?php
                     }
                 }
@@ -118,4 +146,30 @@ if (isset($_POST['btn_Luu'])) {
 
         });
     </script>
+
+    <script type="text/javascript">
+        document.addEventListener('DOMContentLoaded', function() {
+            // Lắng nghe sự kiện khi chọn chương trình khuyến mãi thay đổi
+            document.getElementById('selectKhuyenMai').addEventListener('change', function() {
+                // Lấy giá trị phần trăm giảm giá từ thuộc tính data-phantramgiamgia của tùy chọn đã chọn
+                var selectedOption = this.options[this.selectedIndex];
+                var phanTramGiamGia = selectedOption.getAttribute('data-phantramgiamgia');
+                // Lấy giá trị ngày bắt đầu và kết thúc từ thuộc tính data-ngaybatdau và data-ngayketthuc của tùy chọn đã chọn
+                var ngayBatDau = selectedOption.getAttribute('data-ngaybatdau');
+                var ngayKetThuc = selectedOption.getAttribute('data-ngayketthuc');
+
+                // Cập nhật giá trị phần trăm giảm giá trong phần tử selectPhanTram
+                var selectPhanTram = document.getElementById('selectPhanTram');
+                selectPhanTram.value = phanTramGiamGia;
+
+                // Cập nhật giá trị ngày bắt đầu và kết thúc trong các trường nhập ngày tương ứng
+                var selectNgayBatDau = document.getElementById('selectNgayBatDau');
+                selectNgayBatDau.value = ngayBatDau;
+                var selectNgayKetThuc = document.getElementById('selectNgayKetThuc');
+                selectNgayKetThuc.value = ngayKetThuc;
+            });
+        });
+    </script>
+
+
 </section>
